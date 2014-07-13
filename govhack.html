@@ -1,0 +1,50 @@
+<script type="text/javascript" src="jquery-latest.js"></script>
+<script type="text/javascript" src="jQueryRotate.js"></script>
+<img src="tile1.png" style="position:absolute;width:253px;left:0px;top:0px;">
+<img src="tile2.png" style="position:absolute;width:253px;left:253px;top:0px;">
+<img src="tile3.png" style="position:absolute;width:253px;left:506px;top:0px;">
+<img src="tile4.png" style="position:absolute;width:253px;left:0px;top:214px;">
+<img src="tile5.png" style="position:absolute;width:253px;left:253px;top:214px;">
+<img src="tile6.png" style="position:absolute;width:253px;left:506px;top:214px;">
+
+
+<img src="ring1.png" id="image" style="position:absolute;width:202px;left:279px;top:113px;">
+<img src="ring2.png" id="image2" style="position:absolute;width:213px;left:274px;top:108px;">
+<img src="ring3.png" id="image3" style="position:absolute;width:224px;left:268px;top:102px;">
+<img src="ring4.png" id="image4" style="position:absolute;width:236px;left:262px;top:96px;">
+    <img src="ring5.png" id="image5" style="position:absolute;width:245px;left:257px;top:91px;">
+        <img src="earth.png" style="position:absolute;width:192px;left:284px;top:118px;">
+            <div id="topleft" style="width:1px; height:1px; left:380px; top:214px;position:absolute;">
+                <img src="tiletest.png" style="max-width:100%; max-height:100%;">
+                    </div>
+<script>
+var angle1 = 0;
+var angle2 = 0;
+var angle3 = 0;
+var angle4 = 0;
+var angle5 = 0;
+setInterval(function(){
+	angle1+=3;
+	$("#image").rotate(angle1);
+},50);
+setInterval(function(){
+	angle2-=4;
+	$("#image2").rotate(angle2);
+},50);
+setInterval(function(){
+    angle3+=5;
+    $("#image3").rotate(angle3);
+},50);
+setInterval(function(){
+            angle4-=6;
+            $("#image4").rotate(angle4);
+},50);
+setInterval(function(){
+            angle5+=7;
+            $("#image5").rotate(angle5);
+},50);
+$(document).ready(function(){
+                  $("#topleft").animate({left:'0px',top:'0px',width:'253px',height:'214px',opacity:'1'},'slow');
+                  });
+                
+</script>
