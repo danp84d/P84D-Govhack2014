@@ -7,7 +7,13 @@
       body {
         font-family: 'Lato', sans-serif;
         font-size: 36px;
-	color: #767676;
+	color: #faf7ee;
+      }
+      a:link {
+	color: #db283e;
+      }
+      a:visited {
+        color: #db283e;
       }
     </style>
 </head>
@@ -74,7 +80,7 @@ if ( isset( $session ) ) {
 	$sqlbirthday=$birthday[2] . "-" . $birthday[0] . "-" .$birthday[1];
 	$stmt = $db->query('replace into users set fbid="' . mysql_real_escape_string($fbid) . '", name="' . mysql_real_escape_string($name) . '", first_name="' . mysql_real_escape_string($graphObject['first_name']) . '", last_name="' . mysql_real_escape_string($graphObject['last_name']) . '", birthday="' . mysql_real_escape_string($sqlbirthday) . '", gender="' . mysql_real_escape_string($gender) . '", hometown="' . mysql_real_escape_string($town) . '", suburb="' . mysql_real_escape_string($townarray[0]) . '", country="' . mysql_real_escape_string($townarray[1]) . '", state="' . mysql_real_escape_string($state) . '", age="' . mysql_real_escape_string($age) . '"');
 $stmt->fetch(PDO::FETCH_ASSOC);
-	print '<div style="width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;background-color:#faf7ee">';
+	print '<div style="width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;background-image: url(background.png);background-size: 50% 50%;">';
 	print '<div style="left:20px; width:720px; top: 20px;position:absolute;font-size:20px;">';	
 	print 'Facebook has provided us with these details about you, please correct any that are wrong, or change them.  For the purpose of this app you will need to provide an Australian location.<br><br>';
 	print '<form name="myform" action="https://govhack2014.p84d.com/start.php?fbid=' . $fbid . '" method=post>Name <input type=text style="font-size:20px;" value="' . $name . '" name=name><br><br>';
@@ -123,10 +129,10 @@ $stmt->fetch(PDO::FETCH_ASSOC);
 } else {
   // show login url
 	
-  echo '<div style="width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;background-color:#faf7ee">';
-echo '<div style="left:20px; width:720px; top: 20px;position:absolute;">This is the intro text, need to replace with real words</div>';
+  echo '<div style="background-image: url(background.png);background-size: 50% 50%;width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;">';
+echo '<div style="text-align:center;left:20px; width:720px; top: 20px;position:absolute;">Social Tapestry is currently waiting for approval from Facebook before it can be used by the general public.<br><br>Please check back in a few days.<br><br>In the meantime, check out our Govhack video <a href="voice_hack.mov">here</a> or vote for us to win <a href="http://hackerspace.govhack.org/content/social-tapestry">here</a>.</div>';
 
-echo '<div style="position:absolute;top:275px;left:180px;"><a href="' . $helper->getLoginUrl( array( 'user_friends', 'user_birthday', 'user_location' ) ) . '"><img src=fblogin.png border=0 width=400px></a></div>';
+//echo '<div style="position:absolute;top:275px;left:180px;"><a href="' . $helper->getLoginUrl( array( 'user_friends', 'user_birthday', 'user_location' ) ) . '"><img src=fblogin.png border=0 width=400px></a></div>';
 }
 
 

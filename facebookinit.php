@@ -30,7 +30,7 @@ use Facebook\FacebookAuthorizationException;
 use Facebook\GraphObject;
 use Facebook\GraphSessionInfo;
 session_start();
-FacebookSession::setDefaultApplication( '1507914206109413','0d83c9c24ff9b90c65d92c3c1d66e9bd' );
+FacebookSession::setDefaultApplication( 'id','password' );
 $helper = new FacebookRedirectLoginHelper( 'https://govhack2014.p84d.com/' );
  
 // see if a existing session exists
