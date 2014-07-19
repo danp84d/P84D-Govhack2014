@@ -17,7 +17,8 @@
 <body>
 <?php
 include 'db.php';
-$stmt = $db->query('SELECT * FROM users where fbid="' . mysql_real_escape_string($_GET['fbid']) . '" limit 1');
+$fbid=$_GET['fbid'];
+$stmt = $db->query('SELECT * FROM users where fbid="' . mysql_real_escape_string($fbid) . '" limit 1');
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $name=$row['name'];
 $age=$row['age'];
@@ -25,11 +26,10 @@ $sex=$row['gender'];
 $birthday=$row['birthday'];
 $birthdayarray=explode("-",$birthday);
 $namearray=explode(" ",$name);
-$stmt = $db->query('SELECT sum(ratio) from popprofile where agemax < ' . $age);
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-$popratio=$row['sum(ratio)'];
-$citizennumber=(((100-$popratio)/100)*22700000)-rand(1,1000000);
-list($mentalyear,$mentalage)=pickhistoricyear(1976,1993,2011);
+$citizennumber=$row['citizennumber'];
+$lga=$row['lga'];
+$suburb=$row['suburb'];
+list($mentalyear,$mentalage)=pickhistoricyear($birthdayarray[0],1993,2011);
 $stmt = $db->query('SELECT mentalhealthcases from mentalhealth where year=' . $mentalyear);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $mentalhealthcases=$row['mentalhealthcases'];
@@ -39,19 +39,30 @@ $babyname=$row['name'];
 $stmt = $db->query('select *  from babyname WHERE name like "' . $namearray[0] . '%" and gender="' . $sex . '" order by ranks asc limit 1');
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $babyyear=$row['year'];
-list($incomeyear,$incomeage)=pickhistoricyear(1976,1978,2002);
+list($incomeyear,$incomeage)=pickhistoricyear($birthdayarray[0],1978,2002);
 $stmt = $db->query('select * from income where year=' . $incomeyear);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 $income=$row['averageincome'];
-$stmt = $db->query('select factor from health where minage<=37 and maxage>=37 and risk="Overweight"');
+$stmt = $db->query('select factor, risk, description, image from health where minage<=' . $age . ' and maxage>=' . $age . ' and gender="' . $sex . '" order by factor desc');
+$risk=array();
+$factor=array();
+$description=array();
+$image=array();
+while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+{
+	$risk[]=$row['risk'];
+	$factor[]=$row['factor'];
+	$description[]=$row['description'];
+	$image[]=$row['image'];
+}
+$color=rand(1,5);
+$stmt = $db->query('SELECT incomemin, incomemax from incomebylga where agemin <= ' . $age . ' and agemax >= ' . $age . ' and lga="' . $lga . '" and sex="' . $sex . '" order by value desc limit 1');
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
-$overweight=$row['factor'];
-$stmt = $db->query('select factor from health where minage<=37 and maxage>=37 and risk="High blood pressure"');
-$row = $stmt->fetch(PDO::FETCH_ASSOC);
-$bloodpressure=$row['factor'];
+$incomemin=$row['incomemin'];
+$incomemax=$row['incomemax'];
 
-
-        print '<div style="background-image: url(background.png);background-size: 50% 50%;width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;">';
+	print '<img src="https://graph.facebook.com/' . $fbid . '/picture?type=large" style="min-height:200px;min-width:200px;position:absolute;left:281px;top:119px;opacity:0" id="photo">';
+        print '<div id="background" style="background-image: url(background.png);background-size: 100% 100%;width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;">';
         print '<div id="earth" style="width:1px; height:1px; left:380px; top:214px;position:absolute;opacity:0;">';
         print '<img src="earth.png" style="max-width:100%; max-height:100%;">';
         print '</div>';
@@ -62,43 +73,61 @@ $bloodpressure=$row['factor'];
         print '<div id="ring4" style="position:absolute;width:1px;left:380px;top:214px;opacity:0;"><img src="ring4.png" style="max-width:100%; max-height:100%;"></div>';
         print '<div id="ring5" style="position:absolute;width:1px;left:380px;top:214px;opacity:0;"><img src="ring5.png" style="max-width:100%; max-height:100%;"></div>';
 	print '<div id="welcome" style="position:absolute;width:720px;height:50px;left:20px;top:164px;opacity:0;text-align:center;">Welcome</div>';
-
         print '<div id="thisisyou" style="position:absolute;width:720px;height:50px;left:20px;top:164px;opacity:0;text-align:center;">This is you</div>';
-        print '<div id="thisisyou" style="position:absolute;width:720px;height:50px;left:20px;top:164px;opacity:0;text-align:center;">This is you</div>';
-
+        print '<div id="thisisyourworld" style="position:absolute;width:720px;height:50px;left:20px;top:164px;opacity:0;text-align:center;">This is your world</div>';
+	print '<div id="thisisyouraustralia" style="position:absolute;width:720px;height:50px;left:20px;top:164px;opacity:0;text-align:center;">This is your Australia</div>';
 	print '<div id="name" style="position:absolute;width:710px;height:70px;left:20px;top:20px;opacity:0;text-align:center;">' . $name . '</div>';
 	print '<div id="citizennumber" style="position:absolute;width:710px;height:70px;left:20px;top:350px;opacity:0;text-align:center;">#' . number_format($citizennumber) . '</div>';
-        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 50% 50%;opacity:0;" id="scene3">';
-	print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:150px;width:500px;height:328px;">Based on your date of birth you are Australian resident number:<br>' . number_format($citizennumber) . '</div>';
+        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 100% 100%;opacity:0;" id="scene3">';
+	print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:100px;width:500px;height:328px;">Based on your date of arrival you are Australian resident number:<br>' . number_format($citizennumber) . '</div>';
 	print '</div>';
 
-        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 50% 50%;opacity:0;" id="scene6">';
+        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 100% 100%;opacity:0;" id="scene6">';
 	print '<div style="position:absolute;left:20px;top:20px;"><canvas id="mentalhealth" width="400" height="400"></canvas></div>';
-	print '<div style="position:absolute; left:440px;top:20px;"><img src=mentalhealth.png width=65px></div>';
-	print '<div style="position:absolute; left:440px;top:105px;width:300px;">When you were ' . $mentalage . ', in ' . $mentalyear . ', there were ' . number_format($mentalhealthcases) . ' instances of mental health issues.</div>';
+	print '<div style="position:absolute; left:440px;top:90px;width:300px;">When you were ' . $mentalage . ', in ' . $mentalyear . ', there were ' . number_format($mentalhealthcases) . ' instances of mental health issues.</div>';
+        print '</div>';
+	print '<div id="mentalhealthicon" style="position:absolute;left:0px;top:10px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="mentalhealth' . $color . '.png" width=100px><br>' . number_format($mentalhealthcases) . '</div>';
+	$color=$color+1;
+	if ($color > 5)
+	{
+		$color=1;
+	}
+        print '<div id="babynameicon" style="position:absolute;left:550px;top:10px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="babyname' . $color . '.png" height=100px><br>' . $babyyear . '</div>';
+        $color=$color+1;
+        if ($color > 5)
+        {
+                $color=1;
+        }
+        print '<div id="overweighticon" style="position:absolute;left:0px;top:272px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="' . $image[0] . $color . '.png" height=100px><br>' . $factor[0] . '%</div>';
+        $color=$color+1;
+        if ($color > 5)
+        {
+                $color=1;
+        }
+        print '<div id="incomeicon" style="position:absolute;left:550px;top:272px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="income' . $color . '.png" height=100px><br>$' . number_format($income) . '</div>';
+        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 100% 100%;opacity:0;" id="scene8">';
+        print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:90px;width:500px;height:328px;">The most popular baby name in the year you were born was ' . $babyname . '.<br><br>Your name was most popular in ' . $babyyear . '.</div>';
         print '</div>';
 
-
-	
-	print '<div id="mentalhealthicon" style="position:absolute;left:0px;top:38px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="mentalhealth.png" width=65px><br>' . number_format($mentalhealthcases) . '</div>';
-
-        print '<div id="babynameicon" style="position:absolute;left:550px;top:38px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="babyname.png" height=88px><br>1979</div>';
-
-        print '<div id="overweighticon" style="position:absolute;left:0px;top:302px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="overweight.png" height=44px><br>68.1%</div>';
-
-        print '<div id="incomeicon" style="position:absolute;left:550px;top:302px;width:205px;opacity:0;text-align:center;min-width:205px;"><img src="income.png" height=44px><br>$' . number_format($income) . '</div>';
-
-        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 50% 50%;opacity:0;" id="scene8">';
-        print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:100px;width:500px;height:328px;">The most popular baby name in the year you were born was ' . $babyname . '.<br><br>Your name was most popular in ' . $babyyear . '.</div>';
+        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 100% 100%;opacity:0;" id="scene12">';
+        print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:50px;width:500px;height:328px;">In ' . $incomeyear . ' you were ' . $incomeage . ' years old and the average annual income was $' . number_format($income) . '.<br><br>Today the average income for a ' . $sex . ' your age in ' . $suburb . ' is ';
+	if ($incomemin==0)
+	{
+		print "$0.";
+	}
+	else if ($incomemax==520000)
+	{
+		print "over $" . number_format($incomemin) . ".";
+	}
+	else
+	{
+		print "between $" . number_format($incomemin) . " and $" . number_format($incomemax) . ".";
+	}
+	print '</div>';
         print '</div>';
-
-        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 50% 50%;opacity:0;" id="scene12">';
-        print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:100px;width:500px;height:328px;">In ' . $incomeyear . ' you were ' . $incomeage . ' years old and the average annual income was $' . number_format($income) . '.</div>';
-        print '</div>';
-
-
-        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 50% 50%;opacity:0;" id="scene15">';
-        print '<div style="position:absolute;left:50px;top:70px;"><img src=' . $sex . '.png height=270></div><div style="position:absolute;left:200px;top:100px;width:500px;height:328px;">Based on your age, you have a ' . $overweight . '% chance of being obese, but only ' . $bloodpressure . '% of high blood pressure.</div>';
+        print '<div style="width:1px;height:1px;min-height:1px;min-width:1px;position:absolute;left:380px;top:214px;font-size:36px;background-image: url(background.png);background-size: 100% 100%;opacity:0;" id="scene15">';
+	print '<div style="position:absolute;left:20px;top:20px;"><canvas id="healthrisks" width="400" height="400"></canvas></div>';
+        print '<div style="position:absolute; left:440px;top:50px;width:300px;">Based on your age, you have a ' . $factor[0] . '% chance of ' . $description[0] . ', but only a ' . $factor[8] . '% chance of ' . $description[8] . '.</div>';
         print '</div>';
 
 print "</div>";
@@ -173,15 +202,50 @@ document.write('<bgsound src="'+mp3snd+'" loop="1">');
 document.write('<![endif]-->');
 document.write('</audio>');
 $(document).ready(function(){
-	$("#earth").animate({left:'284px',top:'118px',width:'192px',height:'192px',opacity:'1'},'slow',function(){
-	$("#ring1").animate({left:'279px',top:'113px',width:'202px',height:'202px',opacity:'1'},'slow',function(){
-	$("#ring2").animate({left:'274px',top:'108px',width:'213px',height:'213px',opacity:'1'},'slow',function(){
-	$("#ring3").animate({left:'268px',top:'102px',width:'224px',height:'224px',opacity:'1'},'slow',function(){
-	$("#ring4").animate({left:'262px',top:'96px',width:'236px',height:'236px',opacity:'1'},'slow',function(){
-	$("#ring5").animate({left:'257px',top:'91px',width:'245px',height:'245px',opacity:'1'},'slow',function(){
-	$("#welcome").animate({opacity:'1',fontSize:'140px',top:'100px'},4000,function(){
-	$("#welcome").animate({opacity:'0'},'slow',function(){
-	$("#name").animate({opacity:'1'},'slow',startspin())})})})})})})})});
+$("#earth").animate({left:'284px',top:'118px',width:'192px',height:'192px',opacity:'1'},'slow');
+setTimeout(function(){gotoscene(2)},1000);
+setTimeout(function(){gotoscene(3)},2000);
+setTimeout(function(){gotoscene(4)},3000);
+setTimeout(function(){gotoscene(5)},4000);
+setTimeout(function(){gotoscene(6)},5000);
+setTimeout(function(){gotoscene(7)},6000);
+setTimeout(function(){gotoscene(8)},8000);
+setTimeout(function(){gotoscene(9)},10000);
+setTimeout(function(){gotoscene(10)},12000);
+setTimeout(function(){gotoscene(11)},14000);
+setTimeout(function(){gotoscene(12)},18000);
+setTimeout(function(){gotoscene(44)},20000);
+setTimeout(function(){gotoscene(13)},28000);
+setTimeout(function(){gotoscene(14)},29000);
+setTimeout(function(){gotoscene(15)},31000);
+setTimeout(function(){gotoscene(16)},33000);
+setTimeout(function(){gotoscene(17)},37000);
+setTimeout(function(){gotoscene(18)},47000);
+setTimeout(function(){gotoscene(19)},48000);
+setTimeout(function(){gotoscene(20)},50000);
+setTimeout(function(){gotoscene(21)},53000);
+setTimeout(function(){gotoscene(22)},58000);
+setTimeout(function(){gotoscene(23)},68000);
+setTimeout(function(){gotoscene(24)},69000);
+setTimeout(function(){gotoscene(25)},71000);
+setTimeout(function(){gotoscene(26)},74000);
+setTimeout(function(){gotoscene(27)},79000);
+setTimeout(function(){gotoscene(28)},89000);
+setTimeout(function(){gotoscene(29)},90000);
+setTimeout(function(){gotoscene(30)},92000);
+setTimeout(function(){gotoscene(31)},95000);
+setTimeout(function(){gotoscene(32)},100000);
+setTimeout(function(){gotoscene(33)},110000);
+setTimeout(function(){gotoscene(34)},111000);
+setTimeout(function(){gotoscene(35)},113000);
+setTimeout(function(){gotoscene(36)},116000);
+setTimeout(function(){gotoscene(37)},119000);
+setTimeout(function(){gotoscene(38)},121000);
+setTimeout(function(){gotoscene(39)},122000);
+setTimeout(function(){gotoscene(40)},124000);
+setTimeout(function(){gotoscene(41)},125000);
+setTimeout(function(){gotoscene(42)},127000);
+setTimeout(function(){gotoscene(43)},128000);
 });
 var ctx = $("#mentalhealth").get(0).getContext("2d");
 var mentalhealthdata = {
@@ -199,20 +263,178 @@ var mentalhealthdata = {
 };
 var mentalhealthchart = new Chart(ctx).Bar(mentalhealthdata);
 
-setTimeout(function(){scene2()},12000);
-setTimeout(function(){scene4()},28000);
-setTimeout(function(){scene5()},30000);
-setTimeout(function(){scene6()},38000);
-setTimeout(function(){scene7()},48000);
-setTimeout(function(){scene8()},50000);
-setTimeout(function(){scene9()},55000);
-setTimeout(function(){scene10()},60000);
-setTimeout(function(){scene11()},62000);
-setTimeout(function(){scene12()},65000);
-setTimeout(function(){scene13()},75000);
-setTimeout(function(){scene14()},77000);
-setTimeout(function(){scene15()},80000);
-setTimeout(function(){scene16()},90000);
+
+var ctx2 = $("#healthrisks").get(0).getContext("2d");
+var healthriskdata = [
+	{
+		value:<?php print $factor[0]; ?>,
+		color:"#db283e",
+		highlight:"#FFA7BD",
+		label:"<?php print $risk[0]; ?>"
+	},
+        {
+                value:<?php print $factor[1]; ?>,
+                color:"#62c8bd",
+                highlight:"#E1FFFF",
+                label:"<?php print $risk[1]; ?>"
+        },
+        {
+                value:<?php print $factor[2]; ?>,
+                color:"#e3ce19",
+                highlight:"#FFFF98",
+                label:"<?php print $risk[2]; ?>"
+        },
+        {
+                value:<?php print $factor[3]; ?>,
+                color:"#ed5722",
+                highlight:"#FFD6A1",
+                label:"<?php print $risk[3]; ?>"
+        },
+        {
+                value:<?php print $factor[4]; ?>,
+                color:"#623619",
+                highlight:"#E1B598",
+                label:"<?php print $risk[4]; ?>"
+        }
+];
+var healthriskschart = new Chart(ctx2).PolarArea(healthriskdata);
+
+function gotoscene(sceneno) {
+switch (sceneno) {
+	case 2:
+		$("#ring1").animate({left:'279px',top:'113px',width:'202px',height:'202px',opacity:'1'},'slow');
+		break;
+	case 3:
+		$("#ring2").animate({left:'274px',top:'108px',width:'213px',height:'213px',opacity:'1'},'slow');
+		break;
+	case 4:
+		$("#ring3").animate({left:'268px',top:'102px',width:'224px',height:'224px',opacity:'1'},'slow');
+		break;
+	case 5:
+		$("#ring4").animate({left:'262px',top:'96px',width:'236px',height:'236px',opacity:'1'},'slow');
+		break;
+	case 6:
+		$("#ring5").animate({left:'257px',top:'91px',width:'245px',height:'245px',opacity:'1'},'slow');
+		break;
+	case 7:
+		$("#welcome").animate({opacity:'1',fontSize:'140px',top:'100px'},4000);
+		break;
+	case 8:
+		$("#welcome").animate({opacity:'0'},'slow');
+		break;
+	case 9:
+		$("#name").animate({opacity:'1'},'slow');
+		break;
+	case 10:
+		startspin();
+		break;
+	case 11:
+		sendtoangle(180);
+		break;
+	case 12:
+		$("#scene3").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
+		break;
+	case 44:
+		document.getElementById("background").style.backgroundImage = "url('backgroundhole.png')";
+		document.getElementById("photo").style.opacity = 1;
+		break;
+	case 13:
+		$("#scene3").animate({opacity:'0'},1000);
+		break;
+	case 14:
+		$("#citizennumber").animate({opacity:'1'},2000);
+		break;
+        case 15:
+		startspin();
+                break;
+        case 16:
+		sendtoangle(315);
+                break;
+        case 17:
+		$("#scene6").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);	
+                break;
+        case 18:
+		$("#scene6").animate({opacity:'0'},1000);
+                break;
+        case 19:
+		$("#mentalhealthicon").animate({opacity:'1'},2000);
+                break;
+        case 20:
+		startspin();
+                break;
+        case 21:
+		sendtoangle(45);
+                break;
+        case 22:
+		$("#scene8").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
+                break;
+        case 23:
+		$("#scene8").animate({opacity:'0'},1000);
+                break;
+        case 24:
+		$("#babynameicon").animate({opacity:'1'},2000);
+                break;
+        case 25:
+		startspin();
+                break;
+        case 26:
+		sendtoangle(135);
+                break;
+        case 27:
+		$("#scene12").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
+                break;
+        case 28:
+		$("#scene12").animate({opacity:'0'},1000);
+                break;
+        case 29:
+		$("#incomeicon").animate({opacity:'1'},2000);
+                break;
+        case 30:
+		startspin();
+                break;
+        case 31:
+		sendtoangle(225);
+                break;
+        case 32:
+		$("#scene15").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
+                break;
+        case 33:
+		$("#scene15").animate({opacity:'0'},1000);
+                break;
+        case 34:
+		$("#overweighticon").animate({opacity:'1'},2000);
+                break;
+        case 35:
+		startspin();
+                break;
+        case 36:
+		$("#earth").animate({opacity:'0'},3000);
+                break;
+        case 37:
+		$("#thisisyou").animate({opacity:'1',fontSize:'140px',top:'120px'},2000);
+                break;
+        case 38:
+		$("#thisisyou").animate({opacity:'0'},'slow');
+                break;
+        case 39:
+		$("#thisisyourworld").animate({opacity:'1',fontSize:'80px',top:'170px'},2000);
+                break;
+        case 40:
+		$("#thisisyourworld").animate({opacity:'0'},'slow');
+                break;
+        case 41:
+		$("#thisisyouraustralia").animate({opacity:'1',fontSize:'70px',top:'170px'},2000);
+                break;
+        case 42:
+		$("#thisisyouraustralia").animate({opacity:'0'},'slow');
+                break;
+        case 43:
+                break;
+	default:
+		break;
+}
+};
+
 
 function startspin() {
 clearInterval(ring1timerid);
@@ -241,13 +463,9 @@ ring5timerid=setInterval(function(){
             $("#ring5").rotate(angle5);
 },50);
 };
-function scene2() {
-sendtoangle(180,3);
-}
-function sendtoangle(stopangle,scenevar) {
+function sendtoangle(stopangle) {
 spindest=0;
 angle=stopangle;
-nextscene=scenevar;
 clearInterval(ring1timerid);
 clearInterval(ring2timerid);
 clearInterval(ring3timerid);
@@ -286,11 +504,6 @@ ring1timerid=setInterval(function(){
         if (angle1 == angle )
 	{
 		clearInterval(ring1timerid);
-		spindest+=1;
-		if (spindest==5)
-		{
-			scene(nextscene);
-		}
 	}
 	else
 	{
@@ -301,16 +514,11 @@ ring1timerid=setInterval(function(){
                 }
         	$("#ring1").rotate(angle1);
 	}
-},1);
+},10);
 ring2timerid=setInterval(function(){
         if (angle2 == angle)
         {
                 clearInterval(ring2timerid);
-                spindest+=1;
-                if (spindest==5)
-                {
-                        scene(nextscene);
-                }
         }
         else
         {
@@ -321,16 +529,11 @@ ring2timerid=setInterval(function(){
                 }
                 $("#ring2").rotate(angle2);
         }
-},1);
+},10);
 ring3timerid=setInterval(function(){
         if (angle3 == angle)
         {
                 clearInterval(ring3timerid);
-                spindest+=1;
-                if (spindest==5)
-                {
-                        scene(nextscene);
-                }
         }
         else
         {
@@ -341,16 +544,11 @@ ring3timerid=setInterval(function(){
                 }
                 $("#ring3").rotate(angle3);
         }
-},1);
+},10);
 ring4timerid=setInterval(function(){
         if (angle4 == angle)
         {
                 clearInterval(ring4timerid);
-                spindest+=1;
-                if (spindest==5)
-                {
-                        scene(nextscene);
-                }
         }
         else
         {
@@ -361,16 +559,11 @@ ring4timerid=setInterval(function(){
                 }
                 $("#ring4").rotate(angle4);
         }
-},1);
+},10);
 ring5timerid=setInterval(function(){
         if (angle5 == angle)
         {
                 clearInterval(ring5timerid);
-                spindest+=1;
-                if (spindest==5)
-                {
-                        scene(nextscene);
-                }
         }
         else
         {
@@ -381,64 +574,8 @@ ring5timerid=setInterval(function(){
 		}
                 $("#ring5").rotate(angle5);
         }
-},1);
+},10);
 }
-function scene(scenenumber) {
-if (scenenumber==3)
-{
-	$("#scene3").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
-}
-}
-function scene4() {
-$("#scene3").animate({opacity:'0'},1000);
-$("#citizennumber").animate({opacity:'1'},3000);
-startspin();
-}
-function scene5() {
-sendtoangle(315);
-}
-function scene8() {
-sendtoangle(45);
-}
-function scene6() {
-$("#scene6").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
-startspin();
-}
-function scene9() {
-$("#scene8").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
-}
-function scene7() {
-$("#scene6").animate({opacity:'0'},1000);
-$("#mentalhealthicon").animate({opacity:'1'},3000);
-}
-function scene10() {
-$("#scene8").animate({opacity:'0'},1000);
-$("#babynameicon").animate({opacity:'1'},3000);
-startspin();
-}
-function scene11() {
-sendtoangle(135);
-}
-function scene12() {
-$("#scene12").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
-}
-function scene13() {
-$("#scene12").animate({opacity:'0'},1000);
-$("#incomeicon").animate({opacity:'1'},3000);
-startspin();
-}
-function scene14() {
-sendtoangle(225);
-}
-function scene15() {
-$("#scene15").animate({left:'0px',top:'0px',width:'760px',height:'428px',opacity:'1'},1000);
-}
-function scene16() {
-$("#scene15").animate({opacity:'0'},1000);
-$("#overweighticon").animate({opacity:'1'},3000);
-startspin();
-}
-
 </script>
 </body>
 </html>

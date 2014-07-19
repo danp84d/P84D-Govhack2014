@@ -16,15 +16,6 @@
         color: #db283e;
       }
     </style>
-  <link rel="stylesheet" href="jquery-ui.css">
-<script src="jquery-latest.js"></script>
-  <script src="jquery-ui.js"></script>
-  <script>
-  $(function() {
-    $( "#datepicker1" ).datepicker();
-    $( "#datepicker2" ).datepicker();
-  });
-  </script>
 </head>
 <body>
 <?php
@@ -93,7 +84,7 @@ $stmt->fetch(PDO::FETCH_ASSOC);
 	print '<div style="left:20px; width:720px; top: 20px;position:absolute;font-size:20px;">';	
 	print 'Facebook has provided us with these details about you, please correct any that are wrong, or change them.  For the purpose of this app you will need to provide an Australian location.<br><br>';
 	print '<form name="myform" action="https://govhack2014.p84d.com/start.php?fbid=' . $fbid . '" method=post>Name <input type=text style="font-size:20px;" value="' . $name . '" name=name><br><br>';
-        print 'Date of Birth <input type=text style="font-size:20px;" value="' . $birthdaytext . '" name=dob id=datepicker1><br><br>';
+        print 'Date of Birth <input type=text style="font-size:20px;" value="' . $birthdaytext . '" name=dob><br><br>';
 	if ($townarray[1]=="Australia")
 	{
 	        print 'Location <input type=text style="font-size:20px;" value="' . $townarray[0] . '" name=town><br><br>';
@@ -102,7 +93,7 @@ $stmt->fetch(PDO::FETCH_ASSOC);
 	{
                 print 'Location <input type=text style="font-size:20px;" name=town><br><br>';
 	}
-	print 'When did you arrive in Australia? <input type=text style="font-size:20px;" value="' . $birthdaytext . '" name=arrival id=datepicker2><br><br>';
+	print 'When did you arrive in Australia? <input type=text style="font-size:20px;" value="' . $birthdaytext . '" name=arrival><br><br>';
 	print '<div style="position:absolute;left:645px;"><input type=submit></div>';
 	print '</form></div></div>';
 // Find the friends of the current user
@@ -141,7 +132,7 @@ $stmt->fetch(PDO::FETCH_ASSOC);
   echo '<div style="background-image: url(background.png);background-size: 100% 100%;width:760px;height:428px;min-height:428px;min-width:760px;position:absolute;left:0px;top:0px;">';
 echo '<div style="text-align:center;left:20px; width:720px; top: 20px;position:absolute;">Social Tapestry is currently waiting for approval from Facebook before it can be used by the general public.<br><br>Please check back in a few days.<br><br>In the meantime, check out our Govhack video <a href="voice_hack.mov">here</a> or vote for us to win <a href="http://hackerspace.govhack.org/content/social-tapestry">here</a>.</div>';
 
-//echo '<div style="position:absolute;top:275px;left:180px;"><a href="' . $helper->getLoginUrl( array( 'user_friends', 'user_birthday', 'user_location' ) ) . '"><img src=fblogin.png border=0 width=400px></a></div>';
+echo '<div style="position:absolute;top:275px;left:180px;"><a href="' . $helper->getLoginUrl( array( 'user_friends', 'user_birthday', 'user_location' ) ) . '"><img src=fblogin.png border=0 width=400px></a></div>';
 }
 
 
